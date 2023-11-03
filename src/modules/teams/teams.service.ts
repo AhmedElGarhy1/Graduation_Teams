@@ -27,6 +27,7 @@ export class TeamsService {
     await this.checkUniquenessName(createTeamDto.name);
     await this.checkUniquenessLeader(user.id);
 
+    if (user.teamId) throw new BadRequestException('You are already in team');
     const team = this.repo.create({ ...createTeamDto, leaderId: user.id });
     const createdTeam = await team.save();
 
@@ -47,7 +48,11 @@ export class TeamsService {
     return team;
   }
 
-  async update(id: number, updateTeamDto: UpdateTeamDto) {
+  async update(id: number, leaderId: number, updateTeamDto: UpdateTeamDto) {
+    console.log(id, leaderId);
+
+    await this.isTeamOwner(id, leaderId);
+
     const team = await this.findOne(id);
     await this.checkUniquenessName(updateTeamDto.name);
     Object.assign(team, updateTeamDto);
@@ -55,15 +60,21 @@ export class TeamsService {
     return newTeam;
   }
 
-  async changeLeader(id: number, changeTeamLeaderDto: ChangeTeamLeaderDto) {
+  async changeLeader(
+    id: number,
+    leaderId: number,
+    changeTeamLeaderDto: ChangeTeamLeaderDto,
+  ) {
+    await this.isTeamOwner(id, leaderId);
     const team = await this.findOne(id);
-    const leaderId = changeTeamLeaderDto.leaderId;
-    await this.checkUniquenessLeader(leaderId);
-    team.leaderId = leaderId;
+    const newLeaderId = changeTeamLeaderDto.leaderId;
+    await this.checkUniquenessLeader(newLeaderId);
+    team.leaderId = newLeaderId;
     return await team.save();
   }
 
-  async changeImage(id: number, image: Express.Multer.File) {
+  async changeImage(id: number, leaderId: number, image: Express.Multer.File) {
+    await this.isTeamOwner(id, leaderId);
     const team = await this.findOne(id);
     // delete the old image before uploading a new one
     if (team.image) await this.awsService.deleteFile(team.image);
@@ -78,33 +89,8 @@ export class TeamsService {
     return newTeam;
   }
 
-  async addMember(id: number, addMemberDto: AddTeamMemberDto) {
-    const team = await this.findOne(id);
-
-    const teamLength = team.members.length;
-    if (teamLength >= MAX_TEAM_NUMBERS)
-      throw new BadRequestException(
-        'The team had the maximam number of members',
-      );
-    const member = await this.usersService.findById(addMemberDto.memberId);
-    // check if memeber is enrolled in another team
-    if (member.teamId)
-      throw new BadRequestException('Memebr is already in team');
-
-    member.teamId = team.id;
-    await member.save();
-    return team;
-  }
-
-  async removeMember(id: number, addMemberDto: AddTeamMemberDto) {
-    const team = await this.findOne(id);
-    const member = await this.usersService.findById(addMemberDto.memberId);
-    member.teamId = null;
-    await member.save();
-    return team;
-  }
-
-  async removeImage(id: number) {
+  async removeImage(id: number, leaderId: number) {
+    await this.isTeamOwner(id, leaderId);
     const team = await this.findOne(id);
     // delete the old image before uploading a new one
     if (team.image) await this.awsService.deleteFile(team.image);
@@ -116,7 +102,36 @@ export class TeamsService {
     return newTeam;
   }
 
-  async remove(id: number) {
+  async addMember(id: number, leaderId: number, memberId: number) {
+    await this.isTeamOwner(id, leaderId);
+    const team = await this.findOne(id);
+
+    const teamLength = team.members.length;
+    if (teamLength >= MAX_TEAM_NUMBERS)
+      throw new BadRequestException(
+        'The team had the maximam number of members',
+      );
+    const member = await this.usersService.findById(+memberId);
+    // check if memeber is enrolled in another team
+    if (member.teamId)
+      throw new BadRequestException('Memebr is already in team');
+
+    member.teamId = team.id;
+    await member.save();
+    return team;
+  }
+
+  async removeMember(id: number, leaderId: number, memberId: number) {
+    await this.isTeamOwner(id, leaderId);
+    const team = await this.findOne(id);
+    const member = await this.usersService.findById(memberId);
+    member.teamId = null;
+    await member.save();
+    return team;
+  }
+
+  async remove(id: number, leaderId: number) {
+    await this.isTeamOwner(id, leaderId);
     const team = await this.findOne(id);
     return this.repo.remove(team);
   }
@@ -131,5 +146,13 @@ export class TeamsService {
     //? have team
     if (await this.repo.findOneBy({ leaderId }))
       throw new BadRequestException('already have a team');
+  }
+
+  async isTeamOwner(teamId: number, leaderId: number) {
+    const team = await this.repo.findOneBy({
+      id: teamId,
+      leaderId,
+    });
+    if (!team) throw new BadRequestException("You aren't the team owner");
   }
 }

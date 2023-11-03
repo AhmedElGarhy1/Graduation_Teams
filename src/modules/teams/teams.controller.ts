@@ -39,15 +39,6 @@ export class TeamsController {
     return this.teamsService.create(user, createTeamDto);
   }
 
-  @Post(':id')
-  @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  addMemebr(
-    @Param('id') id: number,
-    @Body() addTeamMemberDto: AddTeamMemberDto,
-  ) {
-    return this.teamsService.addMember(id, addTeamMemberDto);
-  }
-
   @Get()
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
   findAll() {
@@ -62,40 +53,66 @@ export class TeamsController {
 
   @Patch(':id')
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  update(@Param('id') id: string, @Body() updateTeamDto: UpdateTeamDto) {
-    return this.teamsService.update(+id, updateTeamDto);
+  update(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() updateTeamDto: UpdateTeamDto,
+  ) {
+    return this.teamsService.update(+id, user.id, updateTeamDto);
   }
 
   @Patch(':id/change-leader')
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
   changeLeader(
+    @CurrentUser() user: User,
     @Param('id') id: string,
     @Body() changeTeamLeaderDto: ChangeTeamLeaderDto,
   ) {
-    return this.teamsService.changeLeader(+id, changeTeamLeaderDto);
+    return this.teamsService.changeLeader(+id, user.id, changeTeamLeaderDto);
   }
 
   @Patch(':id/upload-image')
   @UseInterceptors(FileInterceptor('image'))
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
   uploadImage(
+    @CurrentUser() user: User,
     @Param('id') id: string,
     @UploadedFile(new UploadImageFilePipe()) image: Express.Multer.File,
   ) {
     if (!image) throw new BadRequestException('No Image found');
 
-    return this.teamsService.changeImage(+id, image);
+    return this.teamsService.changeImage(+id, user.id, image);
   }
 
   @Patch(':id/remove-image')
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  removeImage(@Param('id') id: string) {
-    return this.teamsService.removeImage(+id);
+  removeImage(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.teamsService.removeImage(+id, user.id);
+  }
+
+  @Post(':id/members/:memberId')
+  @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
+  addMemebr(
+    @CurrentUser() user: User,
+    @Param('id') id: number,
+    @Param('memberId') memberId: number,
+  ) {
+    return this.teamsService.addMember(id, user.id, memberId);
+  }
+
+  @Delete(':id/members/:memberId')
+  @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
+  removeMember(
+    @CurrentUser() user: User,
+    @Param('id') id: number,
+    @Param('memberId') memberId: number,
+  ) {
+    return this.teamsService.removeMember(id, user.id, memberId);
   }
 
   @Delete(':id')
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.teamsService.remove(+id);
+  remove(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.teamsService.remove(+id, user.id);
   }
 }
