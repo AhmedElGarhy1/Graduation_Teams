@@ -1,0 +1,64 @@
+### Get all users
+GET http://localhost:3000/auth
+
+### Register user
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "email": "admin@gmail.com",
+    "password": "password",
+    "firstName": "ahmed",
+    "lastName": "elgarhy",
+    "age": 15,
+    "phone": "01205175221",
+    "gender": "Male",
+    "country": "Egypt",
+    "city": "Zagazig",
+    "address": "Herit razna"
+}
+
+### login user
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    //"username": "ahmedelgarhy1",
+    "email": "gemater.g@gmail.com",
+    //"email": "admin@admin.com",
+    "password": "password"
+}
+
+
+### send forgetten password email
+GET http://localhost:3000/auth/email/forget-password/gemater.g@gmail.com
+
+### send reset password
+POST http://localhost:3000/auth/email/reset-password
+Content-Type: application/json
+
+{
+    //"username": "ahmedelgarhy1",
+    "email": "gemater.g@gmail.com",
+    "newPassword": "password",
+    "passwordToken": "23238"
+}
+
+
+
+
+# ### test email service
+# GET http://localhost:3000/auth/email/test/gemater.g@gmail.com
+
+# ### access-token
+# GET http://localhost:3000/auth/user-endpoint
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdlbWF0ZXIuZ0BnbWFpbC5jb20iLCJpYXQiOjE2OTcyMjcyNzAsImV4cCI6MTY5NzMxMzY3MH0.j3mNJIfoA9E-J1ERVTw-TqxMxRcAPbvAwsPihITSqOY
+
+# ### access-token
+# GET http://localhost:3000/auth/admin-endpoint
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdlbWF0ZXIuZ0BnbWFpbC5jb20iLCJpYXQiOjE2OTcyMjcyNzAsImV4cCI6MTY5NzMxMzY3MH0.j3mNJIfoA9E-J1ERVTw-TqxMxRcAPbvAwsPihITSqOY
+
+# ### access-token
+# GET http://localhost:3000/auth/protected-endpoint
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdlbWF0ZXIuZ0BnbWFpbC5jb20iLCJpYXQiOjE2OTcyMjcyNzAsImV4cCI6MTY5NzMxMzY3MH0.j3mNJIfoA9E-J1ERVTw-TqxMxRcAPbvAwsPihITSqOY

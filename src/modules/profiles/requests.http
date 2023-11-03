@@ -1,0 +1,18 @@
+### update profile
+PATCH http://localhost:3000/profiles
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdlbWF0ZXIuZ0BnbWFpbC5jb20iLCJpYXQiOjE2OTY5NjIxNzAsImV4cCI6MTY5NzA0ODU3MH0.ncIenl_gzgXoq07iwRX0-iIUUHFXp_0U1aRAXfbfbvo
+Content-Type: application/json
+
+{
+    "firstName": "ahmed1",
+    "lastName": "elgarhy1",
+    "age": 15
+}
+
+### get profile
+GET http://localhost:3000/profiles
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdlbWF0ZXIuZ0BnbWFpbC5jb20iLCJpYXQiOjE2OTY5NjIxNzAsImV4cCI6MTY5NzA0ODU3MH0.ncIenl_gzgXoq07iwRX0-iIUUHFXp_0U1aRAXfbfbvo
+
+### get profile
+POSTe http://localhost:3000/profiles
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdlbWF0ZXIuZ0BnbWFpbC5jb20iLCJpYXQiOjE2OTY5NjIxNzAsImV4cCI6MTY5NzA0ODU3MH0.ncIenl_gzgXoq07iwRX0-iIUUHFXp_0U1aRAXfbfbvo
