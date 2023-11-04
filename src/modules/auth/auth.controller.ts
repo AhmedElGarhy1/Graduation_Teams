@@ -1,12 +1,28 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninUserDto } from './dto/signin-user.dto';
-import { RegisterUserDto } from '../users/dto/register-user.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
+import { AuthDto } from './dto/auth.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { UsersService } from '../users/users.service';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from '../users/entities/user.entity';
 
+@Serialize(AuthDto)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  getCurrent(@CurrentUser() user: User) {
+    const accessToken = this.authService.generateAccessToken({
+      email: user.email,
+    });
+    return { ...user, accessToken };
+  }
 
   @Post('register')
   signup(@Body() data: RegisterUserDto) {

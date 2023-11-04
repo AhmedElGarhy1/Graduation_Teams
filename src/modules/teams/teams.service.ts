@@ -37,14 +37,18 @@ export class TeamsService {
     return createdTeam;
   }
 
-  async findAll() {
-    const teams = this.repo.find();
-    return teams;
+  async findAll(take: number, skip: number) {
+    const [data, total] = await this.repo.findAndCount({ take, skip });
+    return { data, total };
   }
 
   async findOne(id: number) {
     const team = await this.repo.findOneBy({ id });
     if (!team) throw new NotFoundException(`Team doesn't exist`);
+    const members = await this.usersService.findByTeam(team.id);
+    console.log(members);
+    team.members = members;
+    console.log(team);
     return team;
   }
 

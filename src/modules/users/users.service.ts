@@ -36,6 +36,11 @@ export class UsersService {
     return user;
   }
 
+  async findByTeam(teamId: number) {
+    const user = await this.repo.findBy({ teamId });
+    return user;
+  }
+
   async findByUsername(username: string) {
     const user = await this.repo.findOneBy({ username });
     return user;

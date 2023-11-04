@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { IJwtPayload } from './interfaces/jwt-payload.interface';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { UsersService } from '../users/users.service';
-import { RegisterUserDto } from '../users/dto/register-user.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,11 +41,11 @@ export class AuthService {
     data.roles = [RoleEnum.STUDENT];
 
     const user = await this.usersService.create(data);
-    await this.emailService.createEmailToken(data.email);
-    await this.emailService.sendVerificationEmail(data.email);
+    // await this.emailService.createEmailToken(data.email);
+    // await this.emailService.sendVerificationEmail(data.email);
     const accessToken = this.generateAccessToken({ email: user.email });
 
-    return { user, accessToken };
+    return { ...user, accessToken, message: 'Successfull Register' };
   }
 
   async signin(data: SigninUserDto) {
@@ -58,7 +58,7 @@ export class AuthService {
     if (!isValid) throw new BadRequestException('invalid password');
     const accessToken = this.generateAccessToken({ email: user.email });
 
-    return { user, accessToken };
+    return { ...user, accessToken, message: 'Succussfull Login' };
   }
 
   async verifyEmail(emailToken: string) {

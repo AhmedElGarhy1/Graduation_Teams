@@ -44,6 +44,7 @@ export class User extends BaseEntity {
   // relations
   @OneToOne(() => Profile, (profile) => profile.user, {
     eager: true,
+    cascade: true,
   })
   @JoinColumn()
   profile: Profile;

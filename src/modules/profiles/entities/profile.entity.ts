@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { GenderEnum } from 'src/common/enums/gender.enum';
 import { User } from 'src/modules/users/entities/user.entity';
+import { DepartmentEnum } from 'src/common/enums/department.enum';
 
 @Entity()
 @Unique(['phone'])
@@ -27,6 +28,12 @@ export class Profile extends BaseEntity {
     array: false,
   })
   gender: GenderEnum;
+
+  @Column({
+    type: 'enum',
+    enum: DepartmentEnum,
+  })
+  department: DepartmentEnum;
 
   @Column()
   age: number;

@@ -15,7 +15,10 @@ import { ProfilesService } from './profiles.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadImageFilePipe } from 'src/common/pipes/upload-image-file.pipe';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
+import { ProfileDto } from './dto/profile.dto';
 
+@Serialize(ProfileDto)
 @UseGuards(JwtAuthGuard)
 @Controller('profiles')
 export class ProfilesController {

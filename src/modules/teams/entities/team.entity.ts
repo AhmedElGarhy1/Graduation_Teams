@@ -36,7 +36,9 @@ export class Team extends BaseEntity {
   })
   members: User[];
 
-  @OneToOne(() => User, (user) => user.team)
+  @OneToOne(() => User, (user) => user.team, {
+    eager: true,
+  })
   @JoinColumn()
   leader: User;
 
