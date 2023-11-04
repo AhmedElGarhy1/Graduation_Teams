@@ -30,6 +30,7 @@ export class TeamsService {
     if (user.teamId) throw new BadRequestException('You are already in team');
     const team = this.repo.create({ ...createTeamDto, leaderId: user.id });
     const createdTeam = await team.save();
+    createdTeam.leader = user;
 
     user.teamId = createdTeam.id;
     await user.save();

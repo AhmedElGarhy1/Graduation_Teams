@@ -1,6 +1,7 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { DepartmentEnum } from 'src/common/enums/department.enum';
 import { GenderEnum } from 'src/common/enums/gender.enum';
+import { Profile } from '../entities/profile.entity';
 
 export class ProfileDto {
   @Expose()
@@ -20,4 +21,12 @@ export class ProfileDto {
 
   @Expose()
   department: DepartmentEnum;
+}
+export class ProfilesDto {
+  @Expose()
+  total: number;
+
+  @Expose()
+  @Type(() => ProfileDto)
+  data: Profile;
 }
