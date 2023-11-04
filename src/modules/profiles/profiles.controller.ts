@@ -7,6 +7,7 @@ import {
   UploadedFile,
   UseInterceptors,
   BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -30,9 +31,9 @@ export class ProfilesController {
   //     return singers;
   //   }
 
-  @Get()
-  async findOne(@CurrentUser() user: User) {
-    const profile = await this.profilesService.findById(+user.id);
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const profile = await this.profilesService.findById(+id);
     return profile;
   }
 

@@ -17,6 +17,9 @@ export class AuthDto {
   teamId: number;
 
   @Expose()
+  profileId: number;
+
+  @Expose()
   @Transform(({ obj }) => obj.profile.image)
   image: string;
 }
