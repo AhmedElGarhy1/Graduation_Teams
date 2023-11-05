@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   BadRequestException,
   Param,
+  Query,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -17,26 +18,27 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadImageFilePipe } from 'src/pipes/upload-image-file.pipe';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
-import { ProfileDto } from './dto/profile.dto';
+import { ProfileDto, ProfilesDto } from './dto/profile.dto';
 
-@Serialize(ProfileDto)
 @UseGuards(JwtAuthGuard)
 @Controller('profiles')
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
-  //   @Get()
-  //   async getAll() {
-  //     const singers = await this.profilesService.findAll();
-  //     return singers;
-  //   }
+  @Get()
+  @Serialize(ProfilesDto)
+  async findAll(@Query() { take, skip }) {
+    return this.profilesService.findAll(take, skip);
+  }
 
+  @Serialize(ProfileDto)
   @Get(':id')
   async findOne(@Param('id') id: number) {
     const profile = await this.profilesService.findById(+id);
     return profile;
   }
 
+  @Serialize(ProfileDto)
   @Patch('upload-image')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImage(
@@ -53,14 +55,16 @@ export class ProfilesController {
   }
 
   @Patch()
+  @Serialize(ProfileDto)
   async update(@CurrentUser() user: User, @Body() songData: UpdateProfileDto) {
     const profile = await this.profilesService.updateById(+user.id, songData);
     return profile;
   }
 
-  @Patch('delete-image')
+  @Serialize(ProfileDto)
+  @Patch('remove-image')
   async removeImage(@CurrentUser() user: User) {
-    const profile = await this.profilesService.deleteProfileImage(+user.id);
+    const profile = await this.profilesService.removeProfileImage(+user.id);
     return profile;
   }
 }

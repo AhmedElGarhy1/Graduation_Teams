@@ -34,6 +34,7 @@ export class TeamsService {
       department: user.profile.department,
     });
     const createdTeam = await team.save();
+    createdTeam.leader = user;
 
     user.teamId = createdTeam.id;
     await user.save();

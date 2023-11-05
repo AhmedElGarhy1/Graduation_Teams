@@ -18,6 +18,11 @@ export class ProfilesService {
     private readonly awsService: AwsService,
   ) {}
 
+  async findAll(take: number, skip: number) {
+    const [data, total] = await this.repo.findAndCount({ take, skip });
+    return { data, total };
+  }
+
   async findById(id: number) {
     const profile = await this.repo.findOneBy({ id });
     if (!profile) {
@@ -56,7 +61,7 @@ export class ProfilesService {
     return newProfile;
   }
 
-  async deleteProfileImage(profileId: number) {
+  async removeProfileImage(profileId: number) {
     const profile = await this.findById(profileId);
 
     // delete the old image before uploading a new one
