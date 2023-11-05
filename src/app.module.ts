@@ -16,7 +16,8 @@ import { AwsModule } from './common/modules/aws/aws.module';
 import { TeamsModule } from './modules/teams/teams.module';
 
 import config from './config';
-import { PaginatorMiddleware } from './common/middlewares/Paginator.middleware';
+import { PaginatorMiddleware } from './middlewares/paginator.middleware';
+import { UserJoinTeamModule } from './modules/user-join-team/user-join-team.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaginatorMiddleware } from './common/middlewares/Paginator.middleware';
     EmailModule,
     AwsModule,
     TeamsModule,
+    UserJoinTeamModule,
   ],
   controllers: [AppController],
   providers: [AppService],

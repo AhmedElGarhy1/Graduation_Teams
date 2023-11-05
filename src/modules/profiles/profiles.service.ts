@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AwsService } from 'src/common/modules/aws/aws.service';
-import { AwsFolderEnum } from 'src/common/enums/aws-folder.enum';
+import { AwsFolderEnum } from 'src/enums/aws-folder.enum';
 
 @Injectable()
 export class ProfilesService {

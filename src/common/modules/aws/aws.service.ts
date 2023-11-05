@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 
 import * as AWS from 'aws-sdk';
 import { extname } from 'path';
-import { AwsFolderEnum } from 'src/common/enums/aws-folder.enum';
 import config from 'src/config';
+import { AwsFolderEnum } from 'src/enums/aws-folder.enum';
 
 const splitter = 'amazonaws.com/';
 

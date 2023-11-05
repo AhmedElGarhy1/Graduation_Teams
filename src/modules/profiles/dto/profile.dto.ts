@@ -1,6 +1,6 @@
-import { Expose, Transform } from 'class-transformer';
-import { DepartmentEnum } from 'src/common/enums/department.enum';
-import { GenderEnum } from 'src/common/enums/gender.enum';
+import { Expose } from 'class-transformer';
+import { DepartmentEnum } from 'src/enums/department.enum';
+import { GenderEnum } from 'src/enums/gender.enum';
 
 export class ProfileDto {
   @Expose()
@@ -10,7 +10,7 @@ export class ProfileDto {
   lastName: string;
 
   @Expose()
-  age: number;
+  level: number;
 
   @Expose()
   phone: string;

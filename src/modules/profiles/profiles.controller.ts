@@ -13,10 +13,10 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from 'src/modules/users/entities/user.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { ProfilesService } from './profiles.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadImageFilePipe } from 'src/common/pipes/upload-image-file.pipe';
-import { Serialize } from 'src/common/interceptors/serialize.interceptor';
+import { UploadImageFilePipe } from 'src/pipes/upload-image-file.pipe';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { ProfileDto } from './dto/profile.dto';
 
 @Serialize(ProfileDto)

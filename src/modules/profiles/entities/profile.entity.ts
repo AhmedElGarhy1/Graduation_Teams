@@ -6,9 +6,9 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { GenderEnum } from 'src/common/enums/gender.enum';
 import { User } from 'src/modules/users/entities/user.entity';
-import { DepartmentEnum } from 'src/common/enums/department.enum';
+import { DepartmentEnum } from 'src/enums/department.enum';
+import { GenderEnum } from 'src/enums/gender.enum';
 
 @Entity()
 @Unique(['phone'])
@@ -36,7 +36,7 @@ export class Profile extends BaseEntity {
   department: DepartmentEnum;
 
   @Column()
-  age: number;
+  level: number;
 
   @Column({
     nullable: true,

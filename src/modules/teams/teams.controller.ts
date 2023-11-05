@@ -17,15 +17,15 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { RoleEnum } from 'src/common/enums/role.enum';
 import { ChangeTeamLeaderDto } from './dto/change-team-leader.dto';
-import { UploadImageFilePipe } from 'src/common/pipes/upload-image-file.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { TeamDto, TeamsDto } from './dto/team.dto';
+import { RoleEnum } from 'src/enums/role.enum';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { UploadImageFilePipe } from 'src/pipes/upload-image-file.pipe';
 
 @Controller('teams')
 @UseGuards(JwtAuthGuard, RolesGuard)

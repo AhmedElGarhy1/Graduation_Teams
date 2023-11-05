@@ -9,12 +9,12 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AwsService } from 'src/common/modules/aws/aws.service';
-import { AwsFolderEnum } from 'src/common/enums/aws-folder.enum';
 import { ChangeTeamLeaderDto } from './dto/change-team-leader.dto';
-import { AddTeamMemberDto } from './dto/add-team-member.dto';
 import { MAX_TEAM_NUMBERS } from './constants';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { AwsFolderEnum } from 'src/enums/aws-folder.enum';
+import { RoleEnum } from 'src/enums/role.enum';
 
 @Injectable()
 export class TeamsService {
@@ -28,7 +28,11 @@ export class TeamsService {
     await this.checkUniquenessLeader(user.id);
 
     if (user.teamId) throw new BadRequestException('You are already in team');
-    const team = this.repo.create({ ...createTeamDto, leaderId: user.id });
+    const team = this.repo.create({
+      ...createTeamDto,
+      leaderId: user.id,
+      department: user.profile.department,
+    });
     const createdTeam = await team.save();
 
     user.teamId = createdTeam.id;
@@ -42,19 +46,20 @@ export class TeamsService {
     return { data, total };
   }
 
+  async findByLeader(leaderId: number) {
+    const team = await this.repo.findOneBy({ leaderId });
+    return team;
+  }
+
   async findOne(id: number) {
     const team = await this.repo.findOneBy({ id });
     if (!team) throw new NotFoundException(`Team doesn't exist`);
     const members = await this.usersService.findByTeam(team.id);
-    console.log(members);
     team.members = members;
-    console.log(team);
     return team;
   }
 
   async update(id: number, leaderId: number, updateTeamDto: UpdateTeamDto) {
-    console.log(id, leaderId);
-
     await this.isTeamOwner(id, leaderId);
 
     const team = await this.findOne(id);

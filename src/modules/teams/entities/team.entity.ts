@@ -9,7 +9,8 @@ import {
   Unique,
 } from 'typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
-import { DepartmentEnum } from 'src/common/enums/department.enum';
+import { UserJoinTeam } from 'src/modules/user-join-team/entities/user-join-team.entity';
+import { DepartmentEnum } from 'src/enums/department.enum';
 
 @Entity()
 @Unique(['name'])
@@ -41,6 +42,9 @@ export class Team extends BaseEntity {
   })
   @JoinColumn()
   leader: User;
+
+  @OneToMany(() => UserJoinTeam, (userJoinTeam) => userJoinTeam.team)
+  userJoinTeam: UserJoinTeam[];
 
   @Column()
   leaderId: number;

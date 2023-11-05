@@ -1,7 +1,7 @@
 import { IsNumber, IsPhoneNumber, IsString, Max, Min } from 'class-validator';
 import { IsEnumValidator } from 'src/common/decorators/validation/is-enum-validator.decorator';
-import { DepartmentEnum } from 'src/common/enums/department.enum';
-import { GenderEnum } from 'src/common/enums/gender.enum';
+import { DepartmentEnum } from 'src/enums/department.enum';
+import { GenderEnum } from 'src/enums/gender.enum';
 
 export class CreateProfileDto {
   @IsString()
@@ -11,8 +11,7 @@ export class CreateProfileDto {
   lastName: string;
 
   @IsNumber()
-  @Min(14)
-  age: number;
+  level: number;
 
   @IsPhoneNumber('EG')
   phone: string;

@@ -4,14 +4,16 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { RoleEnum } from '../../../common/enums/role.enum';
 import { Profile } from '../../profiles/entities/profile.entity';
 import { Team } from 'src/modules/teams/entities/team.entity';
+import { UserJoinTeam } from 'src/modules/user-join-team/entities/user-join-team.entity';
+import { RoleEnum } from 'src/enums/role.enum';
 
 @Entity('users')
 @Unique(['username', 'email'])
@@ -52,6 +54,9 @@ export class User extends BaseEntity {
   @ManyToOne(() => Team, (team) => team.members)
   team: Team;
 
+  @OneToMany(() => UserJoinTeam, (userJoinTeam) => userJoinTeam.user)
+  userJoinTeam: UserJoinTeam[];
+
   // forign keys
   @Column()
   profileId: number;
@@ -69,4 +74,7 @@ export class User extends BaseEntity {
       return roles.some((role) => userRole === role);
     });
   }
+
+  // for type
+  isLeader: boolean;
 }
