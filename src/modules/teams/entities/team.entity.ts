@@ -43,7 +43,9 @@ export class Team extends BaseEntity {
   @JoinColumn()
   leader: User;
 
-  @OneToMany(() => UserJoinTeam, (userJoinTeam) => userJoinTeam.team)
+  @OneToMany(() => UserJoinTeam, (userJoinTeam) => userJoinTeam.team, {
+    cascade: true,
+  })
   userJoinTeam: UserJoinTeam[];
 
   @Column()

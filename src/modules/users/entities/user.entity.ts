@@ -51,10 +51,14 @@ export class User extends BaseEntity {
   @JoinColumn()
   profile: Profile;
 
-  @ManyToOne(() => Team, (team) => team.members)
+  @ManyToOne(() => Team, (team) => team.members, {
+    onDelete: 'SET NULL',
+  })
   team: Team;
 
-  @OneToMany(() => UserJoinTeam, (userJoinTeam) => userJoinTeam.user)
+  @OneToMany(() => UserJoinTeam, (userJoinTeam) => userJoinTeam.user, {
+    cascade: true,
+  })
   userJoinTeam: UserJoinTeam[];
 
   // forign keys

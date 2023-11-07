@@ -29,6 +29,10 @@ export class TeamDto {
   leaderName: string;
 
   @Expose()
+  @Transform(({ obj }) => obj.leader.id)
+  leaderId: number;
+
+  @Expose()
   @Type(() => AuthDto)
   @Transform(({ obj }) =>
     obj.members.map((member: User) => ({

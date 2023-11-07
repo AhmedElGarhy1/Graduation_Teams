@@ -1,6 +1,7 @@
 import { Team } from 'src/modules/teams/entities/team.entity';
 import { User } from 'src/modules/users/entities/user.entity';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,7 +11,7 @@ import {
 import { UserJoinTeamTypeEnum } from '../enums/user-join-team-types';
 
 @Entity('user_join_team')
-export class UserJoinTeam {
+export class UserJoinTeam extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

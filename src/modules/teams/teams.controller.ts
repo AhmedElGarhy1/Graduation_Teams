@@ -79,24 +79,15 @@ export class TeamsController {
   }
 
   @Serialize(TeamDto)
-  @Patch(':id/upload-image')
+  @Patch(':id/update-image')
   @UseInterceptors(FileInterceptor('image'))
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  uploadImage(
+  updateImage(
     @CurrentUser() user: User,
     @Param('id') id: string,
-    @UploadedFile(new UploadImageFilePipe()) image: Express.Multer.File,
+    @UploadedFile(new UploadImageFilePipe()) image: Express.Multer.File | null,
   ) {
-    if (!image) throw new BadRequestException('No Image found');
-
     return this.teamsService.changeImage(+id, user.id, image);
-  }
-
-  @Serialize(TeamDto)
-  @Patch(':id/remove-image')
-  @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  removeImage(@CurrentUser() user: User, @Param('id') id: string) {
-    return this.teamsService.removeImage(+id, user.id);
   }
 
   @Serialize(TeamDto)

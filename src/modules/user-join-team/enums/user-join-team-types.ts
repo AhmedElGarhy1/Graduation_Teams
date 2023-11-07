@@ -1,4 +1,4 @@
 export enum UserJoinTeamTypeEnum {
-  USER_REQUEST = 'USER_REQUEST',
-  TEAM_REQUEST = 'TEAM_REQUEST',
+  USER_WANT = 'USER_WANT',
+  TEAM_WANT = 'TEAM_WANT',
 }
