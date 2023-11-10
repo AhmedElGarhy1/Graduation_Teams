@@ -24,7 +24,7 @@ export class UserJoinTeam extends BaseEntity {
   @ManyToOne(() => User, (user) => user.userJoinTeam)
   user: User;
 
-  @ManyToOne(() => Team, (team) => team.userJoinTeam)
+  @ManyToOne(() => Team, (team) => team.userJoinTeam, { eager: true })
   team: Team;
 
   @CreateDateColumn()

@@ -6,11 +6,6 @@ export class CreateUserJoinTeamDto {
   @IsEnumValidator(UserJoinTeamTypeEnum)
   type: UserJoinTeamTypeEnum;
 
-  @ValidateIf(({ type }) => type === UserJoinTeamTypeEnum.USER_WANT)
   @IsNumber()
-  teamId: number;
-
-  @ValidateIf(({ type }) => type === UserJoinTeamTypeEnum.TEAM_WANT)
-  @IsNumber()
-  userId: number;
+  targetId: number;
 }

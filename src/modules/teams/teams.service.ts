@@ -15,6 +15,7 @@ import { MAX_TEAM_NUMBERS } from './constants';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { AwsFolderEnum } from 'src/enums/aws-folder.enum';
+import { RoleEnum } from 'src/enums/role.enum';
 
 @Injectable()
 export class TeamsService {
@@ -37,6 +38,7 @@ export class TeamsService {
     team.members = [user];
     const createdTeam = await team.save();
     user.team = createdTeam;
+    user.roles.push(RoleEnum.LEADER);
     await user.save();
 
     return createdTeam;
@@ -47,6 +49,11 @@ export class TeamsService {
     return { data, total };
   }
 
+  async findByLeaderFail(leaderId: number): Promise<Team> {
+    const team = await this.repo.findOneBy({ leaderId });
+    if (!team) throw new NotFoundException("Team dons't exist");
+    return team;
+  }
   async findByLeader(leaderId: number): Promise<Team> {
     const team = await this.repo.findOneBy({ leaderId });
     return team;
@@ -87,8 +94,14 @@ export class TeamsService {
     await this.isTeamOwner(id, leaderId);
     const newLeaderId = changeTeamLeaderDto.leaderId;
     await this.checkUniquenessLeader(newLeaderId);
+    const oldLeader = await this.usersService.findById(leaderId);
+    const newLeader = await this.usersService.findById(newLeaderId);
+    newLeader.roles.push(RoleEnum.LEADER);
+    oldLeader.roles.filter((role) => role !== RoleEnum.LEADER);
     const team = await this.findOne(id);
     team.leaderId = newLeaderId;
+    await oldLeader.save();
+    await newLeader.save();
     return await team.save();
   }
 

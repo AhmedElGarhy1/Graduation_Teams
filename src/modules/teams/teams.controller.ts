@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -52,7 +53,7 @@ export class TeamsController {
   @Serialize(TeamDto)
   @Get(':id')
   @Roles(RoleEnum.STUDENT, RoleEnum.ADMIN)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.teamsService.findOne(+id);
   }
 

@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserJoinTeamService } from './user-join-team.service';
 import { CreateUserJoinTeamDto } from './dto/create-user-join-team.dto';
@@ -16,6 +17,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { UserJoinTeamsDto } from './dto/user-join-team.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('teams/join')
@@ -27,17 +29,46 @@ export class UserJoinTeamController {
     @CurrentUser() user: User,
     @Body() createUserJoinTeamDto: CreateUserJoinTeamDto,
   ) {
-    return this.userJoinTeamService.create(user.id, createUserJoinTeamDto);
+    return this.userJoinTeamService.create(user, createUserJoinTeamDto);
   }
 
-  @Get()
-  // @Serialize(TeamsDto)
-  findAll(@CurrentUser() user: User, @Query() { take, skip }) {
-    return this.userJoinTeamService.findAll(user.id, take, skip);
+  @Patch('students/:id')
+  acceptStudentRequest(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.userJoinTeamService.acceptStudentRequest(user.id, id);
+  }
+
+  @Patch('teams/:id')
+  acceptTeamRequest(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.userJoinTeamService.acceptTeamRequest(user.id, id);
+  }
+
+  @Delete(':id')
+  deleteRequest(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.userJoinTeamService.cancelJoinRequest(user.id, id);
+  }
+
+  @Get('students')
+  @Serialize(UserJoinTeamsDto)
+  findAllForStudent(@CurrentUser() user: User, @Query() { take, skip }) {
+    return this.userJoinTeamService.findAllForStudents(user.id, take, skip);
+  }
+  @Get('teams')
+  @Serialize(UserJoinTeamsDto)
+  findAllForLeaders(@CurrentUser() user: User, @Query() { take, skip }) {
+    return this.userJoinTeamService.findAllForLeaders(user.id, take, skip);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userJoinTeamService.remove(+id);
+    // return this.userJoinTeamService.remove(+id);
   }
 }

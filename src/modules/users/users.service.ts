@@ -6,15 +6,20 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  findAll() {
-    const users = this.repo.find();
-    return users;
+  async findAll(skip: number, take: number, type: 'free' | 'all') {
+    console.log(type, type === 'free' ? { teamId: null } : {});
+    const [data, total] = await this.repo.findAndCount({
+      skip,
+      take,
+      where: type === 'free' ? { teamId: IsNull() } : {},
+    });
+    return { data, total };
   }
 
   async create(data: CreateUserDto) {

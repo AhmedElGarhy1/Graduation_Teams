@@ -2,6 +2,8 @@ import {
   Injectable,
   ForbiddenException,
   BadRequestException,
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { CreateUserJoinTeamDto } from './dto/create-user-join-team.dto';
 import { UpdateUserJoinTeamDto } from './dto/update-user-join-team.dto';
@@ -12,6 +14,10 @@ import { UserJoinTeamTypeEnum } from './enums/user-join-team-types';
 import { TeamsService } from '../teams/teams.service';
 import { UsersService } from '../users/users.service';
 import { PaginateResponse } from 'src/interfaces/paginate-response.interface';
+import { Team } from '../teams/entities/team.entity';
+import { User } from '../users/entities/user.entity';
+import { IUserJoinTeamData } from './interfaces/user-join-team-data.interface';
+import { MAX_TEAM_NUMBERS } from '../teams/constants';
 
 @Injectable()
 export class UserJoinTeamService {
@@ -22,86 +28,178 @@ export class UserJoinTeamService {
     private readonly usersService: UsersService,
   ) {}
 
-  async create(userId: number, createUserJoinTeamDto: CreateUserJoinTeamDto) {
-    const newDto = await this.joinTeamDtoFactory(userId, createUserJoinTeamDto);
-    await this.checkUniqueness(newDto);
-    const isVersa = await this.repo.findOneBy({
-      userId: newDto.userId,
-      teamId: newDto.teamId,
-    });
+  async create(user: User, createUserJoinTeamDto: CreateUserJoinTeamDto) {
+    const { type, targetId } = createUserJoinTeamDto;
+    let targetTeamId: number;
+    let targetUserId: number;
+    let targetTeam: Team;
+    let targetUser: User;
 
+    if (type === UserJoinTeamTypeEnum.TEAM) {
+      targetUserId = user.id;
+      targetTeamId = targetId;
+      targetUser = user;
+      // this will check if team Exists
+      targetTeam = await this.teamsService.findOne(targetTeamId);
+    } else if (type === UserJoinTeamTypeEnum.STUDENT) {
+      targetUserId = targetId;
+      // this will check if user Exists
+      targetUser = await this.usersService.findById(targetUserId);
+      // this will check if the current loged user is teamLeader
+      targetTeam = await this.teamsService.findByLeaderFail(targetTeamId);
+      targetTeamId = targetTeam.id;
+    }
+    const data: IUserJoinTeamData = {
+      userId: targetUserId,
+      teamId: targetTeamId,
+      type,
+    };
+
+    // check is valid student
+    if (targetUser.teamId)
+      throw new BadRequestException('User already in team');
+
+    // check is valid team
+    if (targetTeam.members.length >= MAX_TEAM_NUMBERS)
+      throw new BadRequestException('Sorry, Team is full now');
+
+    const isVersa = await this.isVersa(data);
     if (isVersa) {
-      await isVersa.remove();
-      const newUser = await this.usersService.findById(newDto.userId);
-      const targetTeam = await this.teamsService.findOne(newDto.teamId);
-      newUser.team = targetTeam;
-      return 'Successfully Joined';
+      targetUser.teamId = targetTeamId;
+      targetTeam.members.push(targetUser);
+      await targetTeam.save();
+      return { message: 'Join request sent' };
     }
 
-    const userJoinTeam = this.repo.create(newDto);
-    return await userJoinTeam.save();
+    const userJoinTeam = this.repo.create(data);
+    await userJoinTeam.save();
+    return { message: 'Join request sent' };
   }
 
-  async findAll(
+  async findAllForStudents(
     userId: number,
     take: number,
     skip: number,
-  ): Promise<PaginateResponse<UserJoinTeam>> {
+  ): Promise<any> {
     const [data, total] = await this.repo.findAndCount({
-      where: { userId, type: UserJoinTeamTypeEnum.USER_WANT },
-      skip,
       take,
+      skip,
+      where: { userId },
     });
     return { data, total };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} userJoinTeam`;
+  async findAllForLeaders(leaderId: number, take: number, skip: number) {
+    const team = await this.teamsService.findByLeaderFail(leaderId);
+    const [data, total] = await this.repo.findAndCount({
+      take,
+      skip,
+      where: { teamId: team.id },
+    });
+
+    return { data, total };
   }
 
-  async joinTeamDtoFactory(userId: number, data: CreateUserJoinTeamDto) {
-    let newData: CreateUserJoinTeamDto;
-    const { type } = data;
-    if (type === UserJoinTeamTypeEnum.USER_WANT) {
-      newData = await this.joinTeam(userId, data);
-    } else if (type === UserJoinTeamTypeEnum.TEAM_WANT) {
-      newData = await this.joinStudent(userId, data);
+  // accept as team leader (from studen't to team)
+  async acceptStudentRequest(leaderId: number, recordId: number) {
+    const record = await this.findById(recordId);
+    if (record.type !== UserJoinTeamTypeEnum.TEAM)
+      throw new NotFoundException('Request not found');
+
+    const team = await this.teamsService.findByLeaderFail(leaderId);
+    if (team.id != record.teamId)
+      throw new ForbiddenException("You aren't the team leader");
+
+    if (team.members.length >= MAX_TEAM_NUMBERS) {
+      await record.remove();
+      throw new BadRequestException('Sorry, team is full');
     }
-    return newData;
+
+    const user = await this.usersService.findById(record.userId);
+    if (user.teamId) {
+      await record.remove();
+      throw new BadRequestException('You already in team');
+    }
+
+    // now i passed
+    user.teamId = team.id;
+    await user.save();
+    await record.remove();
+    return { message: 'Successfully joined' };
   }
 
-  private async joinTeam(
-    userId: number,
-    data: CreateUserJoinTeamDto,
-  ): Promise<CreateUserJoinTeamDto> {
-    // check if he had a team?
-    const user = await this.usersService.findById(userId);
-    if (user.teamId) throw new BadRequestException('You already in a team');
-    const team = await this.teamsService.findOne(data.teamId);
-    if (!team) throw new BadRequestException("Team doesn't exists");
-    data.userId = userId;
-    return data;
+  // accept as student (from team to student)
+  async acceptTeamRequest(userId: number, recordId: number) {
+    const record = await this.findById(recordId);
+    if (record.type !== UserJoinTeamTypeEnum.STUDENT)
+      throw new NotFoundException('Request not found');
+
+    let user = await this.usersService.findById(userId);
+    if (user.teamId) {
+      await record.remove();
+      throw new ConflictException('User already in a team');
+    }
+
+    if (userId != record.userId)
+      throw new ForbiddenException("You aren't the Request sender");
+
+    const team = await this.teamsService.findOne(record.teamId);
+    if (team.members.length >= MAX_TEAM_NUMBERS)
+      throw new BadRequestException('Sorry, team is full');
+
+    // now i passed
+    user.teamId = team.id;
+    await user.save();
+    await record.remove();
+    return { message: 'Successfully joined' };
   }
 
-  private async joinStudent(
-    userId: number,
-    data: CreateUserJoinTeamDto,
-  ): Promise<CreateUserJoinTeamDto> {
+  // cancel as team leader (cancel)
+  async cancelJoinRequest(userId: number, recordId: number) {
+    const record = await this.findById(recordId);
+
     const team = await this.teamsService.findByLeader(userId);
-    // you aren't a leader
-    if (!team) throw new ForbiddenException("Yourn't a leader");
-
-    const member = await this.usersService.findById(data.userId);
-    if (member.teamId)
-      throw new BadRequestException(`The Student is already in a team`);
-
-    data.teamId = team.id;
-    return data;
+    // check if he is the leader to cancel the request
+    console.log(team);
+    if (team) {
+      if (team.id != record.teamId) {
+        throw new ForbiddenException("You aren't the Team leader to accept");
+      }
+      await record.remove();
+      return { message: 'Successfully Canceled' };
+    }
+    // check if he is the request sender
+    if (userId != record.userId) {
+      throw new ForbiddenException("You aren't the request sender");
+    }
+    await record.remove();
+    return { message: 'Successfully Canceled' };
   }
 
-  async checkUniqueness(data: CreateUserJoinTeamDto): Promise<void> {
-    //? have team
-    if (await this.repo.findOneBy(data))
-      throw new BadRequestException('You had already send Join Request');
+  private async findById(id: number) {
+    const record = await this.repo.findOneBy({ id });
+    if (!record) throw new NotFoundException('Join Reqeust Notfound');
+    return record;
+  }
+
+  private async isVersa(data: IUserJoinTeamData): Promise<boolean> {
+    const { type, userId, teamId } = data;
+
+    // check uniquness
+    const sameRecord = await this.repo.findOneBy({
+      userId: userId,
+      teamId: teamId,
+    });
+
+    if (sameRecord) {
+      if (sameRecord.type === type)
+        throw new BadRequestException('You already sent sent reqeust');
+      // if it reached here so the student wants and team wants
+      else {
+        await sameRecord.remove();
+        return true;
+      }
+    }
+    return false;
   }
 }
